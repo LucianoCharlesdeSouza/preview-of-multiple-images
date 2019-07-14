@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Preview-Multiplo Upload</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <style>
+
+            .miniatura {
+                height: 75px;
+                border: 1px solid #000;
+                margin: 10px 5px 0 0;
+            }
+        </style>
+    </head>
+    <body>
+        <br/>
+
+        <div class="container bootstrap snippet">
+
+            <form action="receive.php" method="post" enctype="multipart/form-data">
+
+                <input type="file" name="user_avatar[]" multiple id="addImageInGalery">
+                <div id="galery"></div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <div class="col-xs-12">
+                                <br>
+                                <button class="btn btn-success">Enviar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script src = "https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+        <script>
+            // Verifica se as APIs de arquivo são suportadas pelo navegador.
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                // Todas as APIs são suportadas!
+            } else {
+                alert('A APIs de arquivos não é totalmente suportada neste navegador.');
+            }
+
+
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // Objeto FileList guarda todos os arquivos.
+                var output = [];
+                //Intera sobre os arquivos e lista esses objetos no output.
+                for (var i = 0, f; f = files[i]; i++) {
+//        console.log('Objeto do arquivo', f);
+                    // Informação adicional se for imagem:
+                    if (f.type.match('image.*')) {
+                        var reader = new FileReader();
+                        //A leitura do arquivo é assíncrona
+                        reader.onload = (function(theFile) {
+                            return function(e) {
+//                                console.log('Img info', e, theFile);
+                                // Gera a miniatura:
+                                var img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.title = escape(theFile.name);
+                                var span = document.createElement('span');
+                                //Obtém o tamanho:
+                                //Só é possível obter o tamanho do arquivo após o carregamento dele na miniatura, como o src é um base64 gerado à partir do arquivo local não terá custo de carregamento através da rede.
+                                img.onload = function() {
+                                    var i = document.createElement('i');
+                                    i.innerHTML = "<br>Tamanho Miniatura: " + img.width + "px Largura - " + img.height + "px Altura <br> Tamanho original:" + img.naturalWidth + "px Largura - " + img.naturalWidth + "px Altura";
+                                    span.appendChild(i);
+                                    //Esse método retorna o tamanho calculado: Resultado esperado ((proporcional)x75)
+
+                                    //var width = img.clientWidth;
+                                    //var height = img.clientHeight;
+                                }
+
+                                span.appendChild(img);
+                                document.getElementById('galery').insertBefore(span, null);
+                            };
+                        })(f);
+                        // Read in the image file as a data URL.
+                        reader.readAsDataURL(f);
+                    } else if (f.type.match('application/pdf')) {
+                        console.log('pdf');
+                    }
+
+                    output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                            f.size, ' bytes,  última modificação: ',
+                            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                            '</li>');
+                }
+                document.getElementById('galery').innerHTML = '<ul>' + output.join('') + '</ul>';
+            }
+
+            document.getElementById('addImageInGalery').addEventListener('change', handleFileSelect, false);
+
+        </script>
+    </body>
+</html>
